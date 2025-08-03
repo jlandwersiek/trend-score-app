@@ -1,6 +1,0 @@
-streamlit
-pandas
-numpy
-alpaca-trade-api
-ta
-joblib
