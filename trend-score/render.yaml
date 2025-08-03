@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: trend-score-app
+    env: python
+    branch: main        # deploy from the main branch
+    region: oregon      # adjust to your preferred region
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "streamlit run trend_score.py --server.port $PORT"
+    envVars:
+      - key: API_KEY
+        fromService: trend-score-app
+      - key: API_SECRET
+        fromService: trend-score-app
