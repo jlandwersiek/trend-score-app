@@ -19,7 +19,6 @@ api_key = api_key_input or st.secrets.get("alpaca", {}).get("api_key", "")
 api_secret = api_secret_input or st.secrets.get("alpaca", {}).get("api_secret", "")
 mode = st.sidebar.selectbox("Trend Mode", ["Bull", "Bear"])
 tickers = st.sidebar.text_area("Tickers (comma-separated)", "AAPL,MSFT,GOOG")
-resolution = st.sidebar.selectbox("Bar Timeframe", ["1Min","5Min","15Min","1H","4H","1D","1W"])
 def_days = 30
 history_days = st.sidebar.number_input("Historical Lookback (days)", def_days, 365, def_days*5)
 run_button = st.sidebar.button("Run Analysis")
@@ -35,21 +34,14 @@ BEAR_ATR_FRAC = 0.15
 ADX_LEN = 14
 RMI_LEN = 20
 RMI_MOM = 5
-TF_MAP = {
-    "1Min": TimeFrame(1, TimeFrameUnit.Minute),
-    "5Min": TimeFrame(5, TimeFrameUnit.Minute),
-    "15Min": TimeFrame(15, TimeFrameUnit.Minute),
-    "1H": TimeFrame(1, TimeFrameUnit.Hour),
-    "4H": TimeFrame(4, TimeFrameUnit.Hour),
-    "1D": TimeFrame(1, TimeFrameUnit.Day),
-    "1W": TimeFrame(1, TimeFrameUnit.Week)
-}
+# Force daily timeframe
+TF = TimeFrame(1, TimeFrameUnit.Day)
 
 # --- Data Fetching ---
-def fetch_ohlcv(sym, client, tf, days):
+def fetch_ohlcv(sym, client, days):
     end = datetime.now()
     start = end - timedelta(days=days)
-    req = StockBarsRequest(symbol_or_symbols=[sym], timeframe=tf, start=start, end=end)
+    req = StockBarsRequest(symbol_or_symbols=[sym], timeframe=TF, start=start, end=end)
     try:
         bars = client.get_stock_bars(req).df
     except APIError as e:
@@ -151,11 +143,10 @@ if run_button:
         st.error("Enter both API key and secret.")
     else:
         client = StockHistoricalDataClient(api_key, api_secret)
-        tf = TF_MAP[resolution]
         symbols = [s.strip().upper() for s in tickers.split(',')]
         results = []
         for sym in symbols:
-            df_ohlcv = fetch_ohlcv(sym, client, tf, history_days)
+            df_ohlcv = fetch_ohlcv(sym, client, history_days)
             if df_ohlcv.empty:
                 rec = score_signals(pd.DataFrame(), mode)
                 rec['Symbol'] = sym
@@ -166,7 +157,7 @@ if run_button:
             rec['Symbol'] = sym
             results.append(rec)
         df = pd.DataFrame(results).set_index('Symbol')
-        st.subheader(f"{mode} Trend Scores")
+        st.subheader(f"{mode} Trend Scores (Daily)")
         def color_score(v):
             try:
                 x = float(v)
@@ -182,6 +173,7 @@ if run_button:
             st.dataframe(styled)
         else:
             st.dataframe(df)
+
 
 
 
