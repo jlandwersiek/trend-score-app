@@ -230,12 +230,14 @@ if run_button:
         # Only style if 'Score (%)' exists
         if 'Score (%)' in df.columns and not df['Score (%)'].isnull().all():
             try:
-                styled = df.style.map(highlight_score, subset=['Score (%)'])
+                                # apply coloring only to Score column
+                styled = df.style.applymap(highlight_score, subset=['Score (%)'])
                 st.dataframe(styled)
             except Exception:
                 st.dataframe(df)
         else:
             st.dataframe(df)
+
 
 
 
