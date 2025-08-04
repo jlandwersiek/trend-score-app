@@ -191,24 +191,28 @@ if run_button:
             df = df[cols]
             df = df.set_index('Symbol')
 
-        # Display header and styled score column
+        # Display header
         st.subheader(f"{mode} Trend Scores")
-        if 'Score (%)' in df.columns:
-            def highlight_score(val):
-                try:
-                    pct = float(val)
-                except:
-                    return ''
-                # In Bull mode: green ≥90, orange 70–89; In Bear mode: red ≥90, orange 70–89
-                if pct >= 90:
-                    return 'background-color: lightgreen' if mode=='Bull' else 'background-color: lightcoral'
-                if 70 <= pct < 90:
-                    return 'background-color: orange'
+
+        # Apply styling to Score column only
+        def highlight_score(val):
+            try:
+                pct = float(val)
+            except:
                 return ''
+            # In Bull mode: green ≥90, orange 70–89; In Bear mode: red ≥90, orange 70–89
+            if pct >= 90:
+                return 'background-color: lightgreen' if mode=='Bull' else 'background-color: lightcoral'
+            if 70 <= pct < 90:
+                return 'background-color: orange'
+            return ''
+
+        try:
             styled = df.style.applymap(highlight_score, subset=['Score (%)'])
             st.dataframe(styled)
-        else:
+        except KeyError:
             st.dataframe(df)
+
 
 
 
