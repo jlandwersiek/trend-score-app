@@ -183,35 +183,39 @@ if run_button:
                 rec['Symbol'] = sym
                 results.append(rec)
             except Exception:
-                results.append({'Symbol': sym})
+                # ensure Score (%) exists even on failure
+                results.append({'Symbol': sym, 'Score (%)': float('nan')})
         df = pd.DataFrame(results)
+        # reorder and set index
         if 'Symbol' in df.columns:
             cols = df.columns.tolist()
             cols.insert(0, cols.pop(cols.index('Symbol')))
             df = df[cols]
             df = df.set_index('Symbol')
 
-        # Display header
         st.subheader(f"{mode} Trend Scores")
-
-        # Apply styling to Score column only
+        # highlight function for Score only
         def highlight_score(val):
             try:
                 pct = float(val)
             except:
                 return ''
-            # In Bull mode: green ≥90, orange 70–89; In Bear mode: red ≥90, orange 70–89
             if pct >= 90:
                 return 'background-color: lightgreen' if mode=='Bull' else 'background-color: lightcoral'
             if 70 <= pct < 90:
                 return 'background-color: orange'
             return ''
 
-        try:
-            styled = df.style.applymap(highlight_score, subset=['Score (%)'])
-            st.dataframe(styled)
-        except KeyError:
+        # apply styling safely
+        if 'Score (%)' in df.columns:
+            try:
+                styled = df.style.applymap(highlight_score, subset=['Score (%)'])
+                st.dataframe(styled)
+            except Exception:
+                st.dataframe(df)
+        else:
             st.dataframe(df)
+
 
 
 
