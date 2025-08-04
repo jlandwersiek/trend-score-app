@@ -215,6 +215,9 @@ if run_button:
             df = df.set_index('Symbol')
 
         st.subheader(f"{mode} Trend Scores")
+        # show raw dataframe before styling for debugging
+        st.write(df)
+
         # highlight function for Score only
         def highlight_score(val):
             try:
@@ -235,7 +238,12 @@ if run_button:
             except Exception:
                 st.dataframe(df)
         else:
+            st.dataframe(df)(styled)
+            except Exception:
+                st.dataframe(df)
+        else:
             st.dataframe(df)
+
 
 
 
