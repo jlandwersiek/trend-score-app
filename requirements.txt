@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
-alpaca-trade-api
+alpaca-py
 ta
 joblib
