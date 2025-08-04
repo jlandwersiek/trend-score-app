@@ -191,7 +191,6 @@ if run_button:
                 rec['Symbol'] = sym
                 results.append(rec)
             except Exception:
-                # populate default rec on error to preserve all columns
                 default_rec = {
                     'Symbol': sym,
                     'Score (%)': np.nan,
@@ -207,7 +206,6 @@ if run_button:
                 }
                 results.append(default_rec)
         df = pd.DataFrame(results)
-        # reorder and set index
         if 'Symbol' in df.columns:
             cols = df.columns.tolist()
             cols.insert(0, cols.pop(cols.index('Symbol')))
@@ -215,10 +213,8 @@ if run_button:
             df = df.set_index('Symbol')
 
         st.subheader(f"{mode} Trend Scores")
-        # show raw dataframe before styling for debugging
-        st.write(df)
+        st.write(df)  # debug raw data
 
-        # highlight function for Score only
         def highlight_score(val):
             try:
                 pct = float(val)
@@ -230,7 +226,7 @@ if run_button:
                 return 'background-color: orange'
             return ''
 
-        # apply styling safely
+        # Render styled or raw table
         if 'Score (%)' in df.columns:
             try:
                 styled = df.style.applymap(highlight_score, subset=['Score (%)'])
@@ -238,12 +234,7 @@ if run_button:
             except Exception:
                 st.dataframe(df)
         else:
-            st.dataframe(df)(styled)
-            except Exception:
-                st.dataframe(df)
-        else:
             st.dataframe(df)
-
 
 
 
