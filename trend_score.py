@@ -47,8 +47,12 @@ st.markdown(
 )
 
 # --- Sidebar Inputs ---
-api_key    = st.sidebar.text_input("Alpaca API Key", type="password")
-api_secret = st.sidebar.text_input("Alpaca Secret Key", type="password")
+# Allow providing Alpaca credentials via Streamlit secrets if not manually entered
+api_key_input    = st.sidebar.text_input("Alpaca API Key", type="password")
+api_secret_input = st.sidebar.text_input("Alpaca Secret Key", type="password")
+# fallback to secrets or environment
+api_key    = api_key_input or st.secrets.get("alpaca", {}).get("api_key", "")
+api_secret = api_secret_input or st.secrets.get("alpaca", {}).get("api_secret", "")
 mode       = st.sidebar.selectbox("Trend Mode", ["Bull", "Bear"], index=0)
 tickers    = st.sidebar.text_area("Tickers (comma-separated)", "AAPL,MSFT,GOOG")
 resolution = st.sidebar.selectbox(
@@ -61,6 +65,10 @@ history_days = st.sidebar.number_input(
     "Historical Lookback (days)", min_value=def_days, max_value=365, value=def_days*5
 )
 run_button = st.sidebar.button("Run Analysis")
+
+# show prompt if not yet run
+if not run_button:
+    st.info("Fill in credentials (or set via Streamlit secrets) and click **Run Analysis** to view results.")
 
 # --- Parameters ---
 LOOKBACK_BULL = 20
