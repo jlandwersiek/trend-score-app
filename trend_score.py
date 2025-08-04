@@ -126,29 +126,22 @@ def score_signals(df, mode):
     bdv= bd and last['volume']>last['vol_avg']*BEAR_VOL_MULT
     wbd= bl and not bdv
     s = 0
-    # SMA50
     if mode=='Bull':
         s += 2 if last['close']>last['sma50'] else (1 if last['close']>0.99*last['sma50'] else 0)
     else:
         s += 2 if last['close']<last['sma50'] else (1 if last['close']<1.01*last['sma50'] else 0)
-    # MACD
     if mode=='Bull' and last['macd_line']>last['macd_sig']:
         s += 2 if last['macd_hist']>0.05 else (1.5 if last['macd_hist']>0.01 else 1)
     if mode=='Bear' and last['macd_line']<last['macd_sig']:
         s += 2 if last['macd_hist']<-0.05 else (1.5 if last['macd_hist']<-0.01 else 1)
-    # ADX
     s += 2.5 if last['adx']>30 else (2 if last['adx']>20 else (1 if last['adx']>18 else 0))
-    # SMA20
     if mode=='Bull':
         s += 1 if last['close']>last['sma20'] else (0.5 if last['close']>0.99*last['sma20'] else 0)
     else:
         s += 1 if last['close']<last['sma20'] else (0.5 if last['close']<1.01*last['sma20'] else 0)
-    # Volume
     s += 1 if last['volume']>last['vol_avg'] else (0.5 if last['volume']>0.95*last['vol_avg'] else 0)
-    # RMI
     if mode=='Bull': s += 1 if last['rmi']>=55 else (0.5 if last['rmi']>=50 else 0)
     else:         s += 1 if last['rmi']<=40 else (0.5 if last['rmi']<=50 else 0)
-    # Break
     s += 0.5 if (mode=='Bull' and br) or (mode=='Bear' and bdv) else 0
     pct = round((s/10.5)*100,2)
     entry = br if mode=='Bull' else bdv
@@ -200,19 +193,23 @@ if run_button:
 
         # Display header and styled score column
         st.subheader(f"{mode} Trend Scores")
-        def highlight_score(val):
-            try:
-                pct = float(val)
-            except:
+        if 'Score (%)' in df.columns:
+            def highlight_score(val):
+                try:
+                    pct = float(val)
+                except:
+                    return ''
+                # In Bull mode: green ≥90, orange 70–89; In Bear mode: red ≥90, orange 70–89
+                if pct >= 90:
+                    return 'background-color: lightgreen' if mode=='Bull' else 'background-color: lightcoral'
+                if 70 <= pct < 90:
+                    return 'background-color: orange'
                 return ''
-            # In Bull mode: green ≥90, orange 70–89; In Bear mode: red ≥90, orange 70–89
-            if pct >= 90:
-                return 'background-color: lightgreen' if mode=='Bull' else 'background-color: lightcoral'
-            if 70 <= pct < 90:
-                return 'background-color: orange'
-            return ''
-        styled = df.style.applymap(highlight_score, subset=['Score (%)'])
-        st.dataframe(styled)
+            styled = df.style.applymap(highlight_score, subset=['Score (%)'])
+            st.dataframe(styled)
+        else:
+            st.dataframe(df)
+
 
 
 
