@@ -191,8 +191,21 @@ if run_button:
                 rec['Symbol'] = sym
                 results.append(rec)
             except Exception:
-                # ensure Score (%) exists even on failure
-                results.append({'Symbol': sym, 'Score (%)': float('nan')})
+                # populate default rec on error to preserve all columns
+                default_rec = {
+                    'Symbol': sym,
+                    'Score (%)': np.nan,
+                    'Price vs SMA50': np.nan,
+                    'MACD': np.nan,
+                    'ADX': np.nan,
+                    'Price vs SMA20': np.nan,
+                    'Volume': np.nan,
+                    'RMI': np.nan,
+                    'Break': '',
+                    'Entry': False,
+                    'Exit': False
+                }
+                results.append(default_rec)
         df = pd.DataFrame(results)
         # reorder and set index
         if 'Symbol' in df.columns:
